@@ -72,6 +72,10 @@ mod string_collect {
                 Ok(self.data)
             }
         }
+
+        pub fn prefix(&self, n: usize) -> String {
+            self.data.chars().take(n).collect()
+        }
     }
 }
 
@@ -120,6 +124,21 @@ impl IncompleteMessage {
         let portion_size = tail.as_ref().len();
         // Be careful about integer overflows here.
         if my_size > max_size || portion_size > max_size - my_size {
+            println!(
+                "Location: file={} line={} column={} uuid={}",
+                file!(), line!(), column!(), "9282b659-937d-4a88-9b56-67b19758f992"
+            );
+            println!("Backtrace: {:?}", std::backtrace::Backtrace::capture());
+            match &self.collector {
+                IncompleteMessageCollector::Text(string_collector) => {
+                    println!("First 4096 chars: {}", string_collector.prefix(4096));
+                }
+                IncompleteMessageCollector::Binary(bytes) => {
+                    let prefix: String =
+                        bytes.iter().take(4096).map(|b| format!("{:02x}", b)).collect();
+                    println!("First 4096 bytes: {}", prefix)
+                }
+            }
             return Err(Error::Capacity(CapacityError::MessageTooLong {
                 size: my_size + portion_size,
                 max_size,

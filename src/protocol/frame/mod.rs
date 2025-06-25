@@ -179,6 +179,11 @@ impl FrameCodec {
                     // Enforce frame size limit early and make sure `length`
                     // is not too big (fits into `usize`).
                     if len > max_size {
+                        println!(
+                            "Location: file={} line={} column={} uuid={}",
+                            file!(), line!(), column!(), "16457186-aa31-4556-93d3-ebacd6742497"
+                        );
+                        println!("Backtrace: {:?}", std::backtrace::Backtrace::capture());
                         return Err(Error::Capacity(CapacityError::MessageTooLong {
                             size: len,
                             max_size,

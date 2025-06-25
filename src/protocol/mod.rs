@@ -677,11 +677,25 @@ impl WebSocketContext {
                             Err(Error::Protocol(ProtocolError::ExpectedFragment(c)))
                         }
                         OpData::Text if fin => {
-                            check_max_size(frame.payload().len(), self.config.max_message_size)?;
+                            check_max_size(frame.payload().len(), self.config.max_message_size)
+                                .or_else(|err| {
+                                    let prefix: String = (frame.payload().iter().take(4096))
+                                        .map(|b| format!("{:02x}", b))
+                                        .collect();
+                                    println!("First 4096 bytes: {}", prefix);
+                                    Err(err)
+                                })?;
                             Ok(Some(Message::Text(frame.into_text()?)))
                         }
                         OpData::Binary if fin => {
-                            check_max_size(frame.payload().len(), self.config.max_message_size)?;
+                            check_max_size(frame.payload().len(), self.config.max_message_size)
+                                .or_else(|err| {
+                                    let prefix: String = (frame.payload().iter().take(4096))
+                                        .map(|b| format!("{:02x}", b))
+                                        .collect();
+                                    println!("First 4096 bytes: {}", prefix);
+                                    Err(err)
+                                })?;
                             Ok(Some(Message::Binary(frame.into_payload())))
                         }
                         OpData::Text | OpData::Binary => {
@@ -784,6 +798,11 @@ impl WebSocketContext {
 fn check_max_size(size: usize, max_size: Option<usize>) -> crate::Result<()> {
     if let Some(max_size) = max_size {
         if size > max_size {
+            println!(
+                "Location: file={} line={} column={} uuid={}",
+                file!(), line!(), column!(), "15f7ff9d-51b4-469b-9c03-2b60f0f42997"
+            );
+            println!("Backtrace: {:?}", std::backtrace::Backtrace::capture());
             return Err(Error::Capacity(CapacityError::MessageTooLong { size, max_size }));
         }
     }
