@@ -796,13 +796,13 @@ impl WebSocketContext {
 }
 
 fn check_max_size(size: usize, max_size: Option<usize>) -> crate::Result<()> {
+    println!(
+        "Location: file={} line={} column={} uuid={}",
+        file!(), line!(), column!(), "15f7ff9d-51b4-469b-9c03-2b60f0f42997"
+    );
+    println!("Backtrace: {:?}", std::backtrace::Backtrace::capture());
     if let Some(max_size) = max_size {
         if size > max_size {
-            println!(
-                "Location: file={} line={} column={} uuid={}",
-                file!(), line!(), column!(), "15f7ff9d-51b4-469b-9c03-2b60f0f42997"
-            );
-            println!("Backtrace: {:?}", std::backtrace::Backtrace::capture());
             return Err(Error::Capacity(CapacityError::MessageTooLong { size, max_size }));
         }
     }
